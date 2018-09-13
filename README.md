@@ -1,5 +1,3 @@
-# BCE Empirical finance research programme R - learning
-
-*__Marcell__ Kujbus 2018*
-
-This is a learning repository for a school programme. 
+# BCE empirical finance research programme 2018
+*__Marcell Kujbus__*
+This is a repository for education purposes 
