@@ -33,12 +33,12 @@ simulate_ess=function(m){
 t=ess_counter(5,data_creater(30))
 t[[1]]
 t[[2]]
-simulate_ess(30)
+simulate_ess(19)
 ##
 
-q=data.table(degree=1:30)
-for (i in 1:100) q=cbind(q,data.table(simulate_ess(30)[,2]))
+q=data.table(degree=1:19)
+for (i in 1:100) q=cbind(q,data.table(simulate_ess(19)[,2]))
 q$mean=apply(q[,-1],1,mean)
 q$sd=apply(q[,-1],1,sd)
-ess_solution=data.table(degree=1:30,ess=q$mean,stand.error=q$sd)
+ess_solution=data.table(degree=1:19,ess=q$mean,stand.error=q$sd)
 ggplot(ess_solution,aes(x=degree,y=ess))+geom_point()+ggtitle("The ess converges to zero as the degree increases. Overfitting is detected.")
