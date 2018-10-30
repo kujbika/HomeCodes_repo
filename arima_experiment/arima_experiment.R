@@ -113,6 +113,16 @@ p2 <- ploty(len = 1000, is_forecast = 1)
 p3 <- ploty(len = 2000, is_forecast = 1)
 p4 <- ploty(len = 5000, is_forecast = 1)
 t2 <- Sys.time()
+#remember: It is an ARIMA(2,1,3) process originally!
 
+
+#Conclusion: The longer our time series is, the more accurate
+#estimate for ARIMA(p,d,q) parameters.
+#Even at len = 5000, the probability of getting the right p,q
+#is approx. 30% (according to p4 plot).
+
+
+
+#######THE END############
 
 
