@@ -1,29 +1,35 @@
 #####In this small experiment, we shall analyze a time series' stationarity, and
-## we try to fit the best ARIMA(p,d,q) to it
+#### we plan to fit the best ARIMA(p,d,q) to it.
+###At the end a small convergence investigation happens:
+##Do the estimated p,q-s for ARMA get close to the real p,q ones?
 # Used packages: forecast, lattice, urca, ggplot, ggextra, ggalt
 
 
 #generate a dataset that follows a (2,1,3) ARIMA Process
 RawData <-  ts ( cumsum( arima.sim( n = 1010, 
                                             list( ar = c(0.7, -0.5),
-                                                  ma = c(-0.2, 0.2, 0.5) ) ) ) ) 
+                                                  ma = c(-0.2, 0.2, 0.5) ) ) ) )
 
+
+#plotting it, and check the acf 
 forecast::tsdisplay( RawData )
 tseries::adf.test( RawData ) 
 tseries::kpss.test( RawData )
 urca::summary( urca::ur.df( RawData ) )
 #from the graphical test (acf), and the appropriate unit root tests
 #we conclude that the ts is almost surely not stationary
+
+
 # -> starting to differentiate
-
-
 forecast::Acf( diff( RawData ) )
 forecast::tsdisplay( diff(RawData ) ) 
 tseries::kpss.test( diff( RawData ) ) 
 #from the kpss test we derive that d = 1 is an appropriate choice
 
-#forecast can do it with a one-line for finding the number of integration
+#forecast can do it with a one-line for finding the number of integration of the process
 d <- forecast::ndiffs( RawData ) 
+
+
 
 #finding the value of p,q with grid search
 predgrid <- expand.grid( p = 0:5, q = 0:5 )
@@ -32,18 +38,23 @@ lattice::wireframe( AIC~ p + q, data = predgrid)
 lattice::levelplot( AIC~ p + q, data = predgrid)
 i <- which.min(predgrid$AIC)
 
+
 #lets fit an arima
 fit <- arima( RawData, order = c( predgrid[i,1], d, predgrid[i,2]) ) 
 summary(fit)
 tsdiag( fit ) 
-#the model is accurate diganosticaly: no autocorrelation for the residuals (from the Ljung-Box statistics - the last p value counts)
+#the model is accurate diganosticaly: no autocorrelation for the residuals:
+#from the Ljung-Box statistics - the last p value matters mostly
 
+
+
+#qqplot is the best graphical test for checking normality
 qqnorm( resid( fit ) ) 
 qqline( resid( fit ) )
-#this is the best graphical test for checking normality
 
+#forecasting with ARMA.
 forecast::forecast(fit)
-plot( forecast::forecast( fit), xlim = c( 1000, 1025), ylim = c( -60, -30 ) )  #legyezo abra
+plot( forecast::forecast( fit), xlim = c( 1000, 1025), ylim = c( -60, -30 ) )
 
 
 #hold-out sample validation
@@ -51,9 +62,10 @@ fitTrain <- forecast::Arima( RawData[ 1:1000 ], order = c( predgrid[i,1], d, pre
 forecast::accuracy(forecast::forecast(fitTrain), RawData[ 1001:1010])
 
 
-#####a forecast one-line for everything we covered:
+#a forecast one-line for everything we covered:
 res = forecast::auto.arima( RawData, trace = T)
 #it might not find the (2,1,3), but almost.
+
 
 #################EMPIRICAL JOINT DISTRIBUTION OF p,q-S
 
@@ -95,7 +107,6 @@ ploty <- function(len = 1000, is_implementation = 0, is_forecast = 0){
   return (q)
 }
 
-ploty(len = 1000, is_forecast = 1)
 t1 <- Sys.time()
 p1 <- ploty(len = 500, is_forecast = 1)
 p2 <- ploty(len = 1000, is_forecast = 1)
@@ -104,15 +115,4 @@ p4 <- ploty(len = 5000, is_forecast = 1)
 t2 <- Sys.time()
 
 
-dist_table <- data.table::data.table("#" = 1:1000, "p" = 0, "q" = 0)
-result <- replicate(1000, SimArima())
-dist_table$p = result[1,]
-dist_table$q = result[2,]
-p <- ggplot(dist_table, aes(x=p, y=q)) + ggtitle("The empirical joint distribution of ARMA parameters")+
-  geom_count(aes(size = ..prop.., group = 1)) + scale_size_area( max_size = 12) +
-  theme(legend.position = "left", legend.title = element_text(colour="black", size=10, 
-                                                              face="bold"),legend.background = element_rect(
-                                                                fill="grey86",
-                                                                size=0.5, linetype="solid", 
-                                                                colour ="black"))
-ggExtra::ggMarginal(p, type="histogram", margins = "both")
+
